@@ -10,7 +10,7 @@ class Config:
     
     # Configuración del servidor
     HOST = os.getenv('HOST', '0.0.0.0')
-    PORT = int(os.getenv('PORT', 8000))
+    PORT = int(os.getenv('PORT', 443))
     
     # Configuración de WebSocket
     PING_INTERVAL = int(os.getenv('PING_INTERVAL', 30))  # 30 segundos
