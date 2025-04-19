@@ -34,16 +34,9 @@ function Chat() {
   const [filteredMessages, setFilteredMessages] = useState([]);
   const [isFirstLocationSent, setIsFirstLocationSent] = useState(false);
   const navigate = useNavigate();
-  const [selectedLocation, setSelectedLocation] = useState('gps');
 
   // Coordenadas por defecto: Paloma 715, Córdoba, Argentina
   const DEFAULT_COORDINATES = [-31.3740, -64.2852]; // Kiosko 10
-  const LOCATIONS = [
-    { name: 'Actual (GPS)', value: 'gps', coords: null },
-    { name: 'Rafael Nuñez 4023', value: 'rafael', coords: [-31.3718834, -64.2331584] },
-    { name: 'Kiosko 10', value: 'kiosko', coords: [-31.3684186, -64.238123] },
-    { name: 'Q2', value: 'q2', coords: [-31.270729, -64.4587293] }
-  ];
 
   // Actualizar la ref cuando cambia position
   useEffect(() => {
@@ -54,47 +47,39 @@ function Chat() {
   useEffect(() => {
     console.log('Setting up geolocation monitoring...');
     
-    if (selectedLocation === 'gps') {
-      // Get initial position
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          console.log('Got initial position:', position.coords);
-          setPosition([position.coords.latitude, position.coords.longitude]);
-          setLocationError(null);
-        },
-        (error) => {
-          console.error('Error getting initial location:', error);
-          setPosition(DEFAULT_COORDINATES);
-          setLocationError('Error al obtener ubicación GPS. Usando ubicación por defecto.');
-        }
-      );
-
-      // Watch position changes
-      const watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          console.log('Position changed:', position.coords);
-          setPosition([position.coords.latitude, position.coords.longitude]);
-          setLocationError(null);
-        },
-        (error) => {
-          console.error('Error watching location:', error);
-          setPosition(DEFAULT_COORDINATES);
-          setLocationError('Error al obtener ubicación GPS. Usando ubicación por defecto.');
-        }
-      );
-
-      return () => {
-        console.log('Cleaning up geolocation monitoring');
-        navigator.geolocation.clearWatch(watchId);
-      };
-    } else {
-      const location = LOCATIONS.find(loc => loc.value === selectedLocation);
-      if (location && location.coords) {
-        setPosition(location.coords);
+    // Get initial position
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        console.log('Got initial position:', position.coords);
+        setPosition([position.coords.latitude, position.coords.longitude]);
         setLocationError(null);
+      },
+      (error) => {
+        console.error('Error getting initial location:', error);
+        setPosition(DEFAULT_COORDINATES);
+        setLocationError('Error al obtener ubicación GPS. Usando ubicación por defecto.');
       }
-    }
-  }, [selectedLocation]);
+    );
+
+    // Watch position changes
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        console.log('Position changed:', position.coords);
+        setPosition([position.coords.latitude, position.coords.longitude]);
+        setLocationError(null);
+      },
+      (error) => {
+        console.error('Error watching location:', error);
+        setPosition(DEFAULT_COORDINATES);
+        setLocationError('Error al obtener ubicación GPS. Usando ubicación por defecto.');
+      }
+    );
+
+    return () => {
+      console.log('Cleaning up geolocation monitoring');
+      navigator.geolocation.clearWatch(watchId);
+    };
+  }, []);
 
   const connectWebSocket = useCallback(() => {
     console.log('Attempting to create WebSocket connection...');
@@ -819,33 +804,6 @@ function Chat() {
             </MapContainer>
           </div>
         )}
-      </div>
-
-      {/* Agregar el selector de ubicación antes del chat */}
-      <div style={{
-        padding: '10px',
-        backgroundColor: '#111b21',
-        borderBottom: '1px solid #2a3942',
-      }}>
-        <select 
-          value={selectedLocation}
-          onChange={(e) => setSelectedLocation(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '8px',
-            borderRadius: '8px',
-            backgroundColor: '#2a3942',
-            color: '#fff',
-            border: 'none',
-            fontSize: '14px',
-          }}
-        >
-          {LOCATIONS.map(location => (
-            <option key={location.value} value={location.value}>
-              {location.name}
-            </option>
-          ))}
-        </select>
       </div>
     </div>
   );
