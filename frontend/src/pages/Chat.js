@@ -376,8 +376,28 @@ function Chat() {
 
   // Efecto para scroll al final de los mensajes
   useEffect(() => {
-    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [filteredMessages]); // Cambiado de messages a filteredMessages
+    if (messageEndRef.current) {
+      messageEndRef.current.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'end'
+      });
+    }
+  }, [filteredMessages]);
+
+  // Efecto adicional para scroll inmediato cuando hay nuevos mensajes
+  useEffect(() => {
+    if (messageEndRef.current) {
+      const messagesContainer = messageEndRef.current.parentElement;
+      const isNearBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= messagesContainer.clientHeight + 100;
+      
+      if (isNearBottom) {
+        messageEndRef.current.scrollIntoView({ 
+          behavior: 'auto',
+          block: 'end'
+        });
+      }
+    }
+  }, [filteredMessages.length]);
 
   const sendMessage = (e) => {
     e.preventDefault();
@@ -403,6 +423,16 @@ function Chat() {
       
       wsRef.current.send(JSON.stringify(messageData));
       setMessage('');
+
+      // Scroll inmediato después de enviar mensaje
+      setTimeout(() => {
+        if (messageEndRef.current) {
+          messageEndRef.current.scrollIntoView({ 
+            behavior: 'auto',
+            block: 'end'
+          });
+        }
+      }, 100);
     } else {
       console.log('Cannot send message:', {
         hasMessage: !!message.trim(),
@@ -481,9 +511,16 @@ function Chat() {
       display: 'flex',
       flexDirection: 'column',
       height: '100vh',
+      height: '-webkit-fill-available', // Para Chrome mobile
       backgroundColor: '#111b21',
       color: '#e9edef',
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      position: 'fixed', // Para evitar scroll en mobile
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      overflow: 'hidden'
     }}>
       {/* Header */}
       <div style={{
@@ -495,7 +532,8 @@ function Chat() {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+        boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+        height: '60px' // Altura fija para el header
       }}>
         <div style={{ 
           display: 'flex',
@@ -576,7 +614,8 @@ function Chat() {
         display: 'flex',
         flex: 1,
         overflow: 'hidden',
-        position: 'relative'
+        position: 'relative',
+        height: 'calc(100% - 60px)' // Restamos la altura del header
       }}>
         {/* Chat View */}
         {!showMap && (
@@ -586,7 +625,8 @@ function Chat() {
             flexDirection: 'column',
             height: '100%',
             padding: '16px',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            position: 'relative'
           }}>
             {/* Messages */}
             <div style={{
@@ -596,7 +636,8 @@ function Chat() {
               flexDirection: 'column',
               gap: '8px',
               paddingBottom: '16px',
-              paddingTop: '60px'
+              paddingTop: '8px',
+              WebkitOverflowScrolling: 'touch' // Mejor scroll en iOS
             }}>
               {filteredMessages.map((msg, index) => {
                 const userColor = getUserColor(msg.username);
@@ -673,7 +714,10 @@ function Chat() {
             {/* Message Input */}
             <div style={{
               padding: '12px 0',
-              backgroundColor: 'transparent'
+              backgroundColor: 'transparent',
+              position: 'sticky',
+              bottom: 0,
+              zIndex: 100
             }}>
               <form onSubmit={sendMessage} style={{ 
                 display: 'flex',
@@ -727,7 +771,8 @@ function Chat() {
           <div style={{ 
             flex: 1,
             position: 'relative',
-            height: '100%'
+            height: '100%',
+            overflow: 'hidden'
           }}>
             <MapContainer
               center={position}
