@@ -678,7 +678,9 @@ function Chat() {
                       fontSize: '14.2px',
                       boxShadow: '0 1px 0.5px rgba(0,0,0,0.13)',
                       position: 'relative',
-                      lineHeight: '1.3'
+                      lineHeight: '1.3',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word'
                     }}>
                       <div style={{ 
                         display: 'flex', 
@@ -688,7 +690,8 @@ function Chat() {
                       }}>
                         <div style={{ 
                           maxWidth: 'calc(100% - 50px)',
-                          wordBreak: 'break-word'
+                          wordBreak: 'break-word',
+                          whiteSpace: 'pre-wrap'
                         }}>
                           {msg.content}
                         </div>
